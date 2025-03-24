@@ -1,5 +1,6 @@
 package br.com.yvital.api;
 
+import br.com.yvital.model.LinhaDigitavel;
 import br.com.yvital.model.Pix;
 import br.com.yvital.service.DictService;
 import br.com.yvital.service.PixService;
@@ -7,6 +8,10 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponseSchema;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -20,6 +25,17 @@ public class PixResource {
     @Inject
     PixService pixService;
 
+    @Operation(description = "API oara buscar uma linha digitável.")
+    @APIResponseSchema(LinhaDigitavel.class)
+    @APIResponses(value = {
+            @APIResponse(responseCode = "201", description = "Retorno Ok com a linha criada."),
+            @APIResponse(responseCode = "401", description = "Erro de autenticação dessa API"),
+            @APIResponse(responseCode = "403", description = "Erro de autorização dessa API."),
+            @APIResponse(responseCode = "404", description = "Recurso não encontrado."),
+            @APIResponse(responseCode = "200", description = "OK"),
+    })
+
+
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -32,6 +48,16 @@ public class PixResource {
         }
         return null;
     }
+
+    @Operation(description = "API oara buscar um QRCode a partir de um UUID específico.")
+    @APIResponseSchema(Response.class)
+    @APIResponses(value = {
+            @APIResponse(responseCode = "201", description = "Retorno Ok com a transação criada."),
+            @APIResponse(responseCode = "401", description = "Erro de autenticação dessa API"),
+            @APIResponse(responseCode = "403", description = "Erro de autorização dessa API."),
+            @APIResponse(responseCode = "404", description = "Recurso não encontrado."),
+            @APIResponse(responseCode = "200", description = "OK"),
+    })
 
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
