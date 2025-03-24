@@ -33,5 +33,11 @@ public class PixResource {
         return null;
     }
 
-
+    @GET
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces("image/png")
+    @Path("/qrcode/{uuid}")
+    public Response qrCode(@PathParam("uuid") String uuid) throws IOException {
+        return Response.ok(pixService.gerarQrCode(uuid)).build();
+    }
 }
