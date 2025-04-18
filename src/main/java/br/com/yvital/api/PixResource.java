@@ -2,6 +2,7 @@ package br.com.yvital.api;
 
 import br.com.yvital.model.LinhaDigitavel;
 import br.com.yvital.model.Pix;
+import br.com.yvital.model.Transaction;
 import br.com.yvital.service.DictService;
 import br.com.yvital.service.PixService;
 import jakarta.inject.Inject;
@@ -62,8 +63,60 @@ public class PixResource {
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces("image/png")
-    @Path("/qrcode/{uuid}")
+    @Path("/{uuid}/qrcode")
     public Response qrCode(@PathParam("uuid") String uuid) throws IOException {
         return Response.ok(pixService.gerarQrCode(uuid)).build();
+    }
+
+
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{uuid}/aprovar")
+    @PATCH
+    @Operation(description = "API responsável por aprovar um pagamento PIX")
+    @APIResponseSchema(Transaction.class)
+    @APIResponses(value = {
+            @APIResponse(responseCode = "201", description = "Retorno Ok com a transação criada."),
+            @APIResponse(responseCode = "401", description = "Erro de autenticação dessa API"),
+            @APIResponse(responseCode = "403", description = "Erro de autorização dessa API."),
+            @APIResponse(responseCode = "404", description = "Recurso não encontrado."),
+            @APIResponse(responseCode = "200", description = "OK"),    }
+    )
+    public Response aprovarPix(@PathParam("uuid") String uuid) {
+        return Response.ok(pixService.aprovarTransacao(uuid).get()).build();
+    }
+
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{uuid}/reprovar")
+    @DELETE
+    @Operation(description = "API responsável por reprovar um pagamento PIX")
+    @APIResponseSchema(Transaction.class)
+    @APIResponses(value = {
+            @APIResponse(responseCode = "201", description = "Retorno Ok com a transação criada."),
+            @APIResponse(responseCode = "401", description = "Erro de autenticação dessa API"),
+            @APIResponse(responseCode = "403", description = "Erro de autorização dessa API."),
+            @APIResponse(responseCode = "404", description = "Recurso não encontrado."),
+            @APIResponse(responseCode = "200", description = "OK"),    }
+    )
+    public Response reprovarPix(@PathParam("uuid") String uuid) {
+        return Response.ok(pixService.reprovarTransacao(uuid).get()).build();
+    }
+
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{uuid}")
+    @GET
+    @Operation(description = "API responsável por buscar um pagamento PIX")
+    @APIResponseSchema(Transaction.class)
+    @APIResponses(value = {
+            @APIResponse(responseCode = "201", description = "Retorno Ok com a transação criada."),
+            @APIResponse(responseCode = "401", description = "Erro de autenticação dessa API"),
+            @APIResponse(responseCode = "403", description = "Erro de autorização dessa API."),
+            @APIResponse(responseCode = "404", description = "Recurso não encontrado."),
+            @APIResponse(responseCode = "200", description = "OK"),    }
+    )
+    public Response buscarPix(@PathParam("uuid") String uuid) {
+        return Response.ok(pixService.findById(uuid).get()).build();
     }
 }

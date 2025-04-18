@@ -1,12 +1,17 @@
 package br.com.yvital.repository;
 
 import br.com.yvital.domain.TransactionConverterApply;
+import br.com.yvital.domain.TransactionDomain;
 import br.com.yvital.model.Chave;
 import br.com.yvital.model.LinhaDigitavel;
 import br.com.yvital.model.StatusPix;
 import br.com.yvital.model.Transaction;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.FindOneAndReplaceOptions;
+import com.mongodb.client.model.ReturnDocument;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.bson.Document;
 
@@ -14,10 +19,14 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
 
+import static com.mongodb.client.model.Filters.eq;
+
+@ApplicationScoped
 public class TransacaoPixMongoClientRepository implements TransactionRepository {
 
-    public static final String AMERICA_SAO_PAULO = "America/Sao_paulo";
+    public static final String AMERICA_SAO_PAULO = "America/Sao_Paulo";
     @Inject
     MongoClient mongoClient;
 
@@ -38,11 +47,24 @@ public class TransacaoPixMongoClientRepository implements TransactionRepository 
 
     @Override
     public Optional<Transaction> alterarStatusTransacao(String uuid, StatusPix statusPix) {
+        Optional<Document> optionalDocument = finOne(uuid);
+        if(optionalDocument.isPresent()){
+            var document = optionalDocument.get();
+            var opts = new FindOneAndReplaceOptions().upsert(false).returnDocument(ReturnDocument.AFTER);
+
+            document.merge(TransactionConverterApply.STATUS, statusPix, (a,b) -> b);
+            var replace = getCollection().findOneAndReplace(eq(TransactionConverterApply.ID, uuid), document, opts);
+            assert replace != null;
+
+            return Optional.ofNullable(TransactionConverterApply.apply(replace));
+        }
         return Optional.empty();
     }
 
     @Override
     public Optional<Document> finOne(String uuid) {
-        return Optional.empty();
+        var filter = eq(TransactionConverterApply.ID, uuid);
+        FindIterable<Document> documents = getCollection().find(filter);
+        return StreamSupport.stream(documents.spliterator(), false).findFirst();
     }
 }
