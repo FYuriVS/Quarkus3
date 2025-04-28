@@ -10,16 +10,21 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.ParameterIn;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponseSchema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Objects;
 
 @Path("/v1/pix")
 public class PixResource {
 
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
     @Inject
     DictService dictService;
 
@@ -118,5 +123,28 @@ public class PixResource {
     )
     public Response buscarPix(@PathParam("uuid") String uuid) {
         return Response.ok(pixService.findById(uuid).get()).build();
+    }
+
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/transacoes")
+    @GET
+    @Operation(description = "API responsável por buscar pagamentos PIX")
+    @APIResponseSchema(Transaction.class)
+    @APIResponses(value = {
+            @APIResponse(responseCode = "201", description = "Retorno Ok com a transação criada."),
+            @APIResponse(responseCode = "401", description = "Erro de autenticação dessa API"),
+            @APIResponse(responseCode = "403", description = "Erro de autorização dessa API."),
+            @APIResponse(responseCode = "404", description = "Recurso não encontrado."),
+            @APIResponse(responseCode = "200", description = "OK"),    }
+    )
+    @Parameter(name = "dataInicio", in = ParameterIn.QUERY,
+    description = "Data de início no formatao yyyy-MM-dd")
+
+    @Parameter(name = "dataFim", in = ParameterIn.QUERY,
+            description = "Data de fim no formatao yyyy-MM-dd")
+
+    public Response buscarTransacoes(@QueryParam(value = "dataInicio") String dataInicio, @QueryParam(value = "dataFim") String dataFim) throws ParseException {
+        return Response.ok(pixService.buscarTransacoes(DATE_FORMAT.parse(dataInicio), DATE_FORMAT.parse(dataFim))).build();
     }
 }

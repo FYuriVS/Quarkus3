@@ -9,5 +9,5 @@ db.createUser(
             }
         ]
     }
-)
-db.createCollection("transacao_pix")
+);
+db.createCollection("transacao_pix");
